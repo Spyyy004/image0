@@ -17,7 +17,7 @@ const TopNav = () => {
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Open source on GitHub"
                 >
-                  <Github className="w-5 h-5" />
+                  <Github className="w-6 h-6" />
                   <span className="sm:hidden text-sm">GitHub</span>
                 </a>
               </TooltipTrigger>
@@ -36,7 +36,7 @@ const TopNav = () => {
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Support this project"
                 >
-                  <span className="text-base">☕</span>
+                  <span className="text-xl">☕</span>
                   <span className="sm:hidden text-sm">Buy me a coffee</span>
                 </a>
               </TooltipTrigger>
