@@ -11,7 +11,7 @@ const TopNav = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <a
-                  href="https://github.com/<your-username>/image0.dev"
+                  href="https://github.com/Spyyy004/image0"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
