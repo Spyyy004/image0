@@ -30,7 +30,7 @@ const TopNav = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <a
-                  href="https://www.buymeacoffee.com/"
+                  href="https://buymeacoffee.com/IyushPawar"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
