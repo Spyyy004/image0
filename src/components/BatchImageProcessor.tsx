@@ -1,5 +1,5 @@
-import { useState, useCallback, memo } from "react";
-import { ImageData, formatBytes } from "@/lib/imageUtils";
+import { useState, useCallback, memo, useRef } from "react";
+import { ImageData, formatBytes, loadImages } from "@/lib/imageUtils";
 import { Button } from "@/components/ui/button";
 import { Maximize2, FileDown, RefreshCw, Trash2, X, Images, Plus, Trash } from "lucide-react";
 import BatchResizeTool from "./BatchResizeTool";
@@ -11,7 +11,7 @@ import ImageThumbnail from "./ImageThumbnail";
 interface BatchImageProcessorProps {
   images: ImageData[];
   onReset: () => void;
-  onAddMore: () => void;
+  onAddMore: (newImages: ImageData[]) => void;
   onRemoveImage: (id: string) => void;
 }
 
@@ -34,6 +34,7 @@ const BatchImageProcessor = memo(({
   const [selectedImages, setSelectedImages] = useState<Set<string>>(
     new Set(images.map(img => img.id))
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleImageSelection = useCallback((id: string) => {
     setSelectedImages(prev => {
@@ -58,6 +59,33 @@ const BatchImageProcessor = memo(({
   const selectedImagesList = images.filter(img => selectedImages.has(img.id));
   const totalSize = images.reduce((sum, img) => sum + img.size, 0);
   const selectedSize = selectedImagesList.reduce((sum, img) => sum + img.size, 0);
+
+  const handleAddMoreClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const imageFiles = Array.from(files).filter(file => 
+      file.type.startsWith('image/')
+    );
+
+    if (imageFiles.length === 0) return;
+
+    try {
+      const newImages = await loadImages(imageFiles);
+      if (newImages.length > 0) {
+        onAddMore(newImages);
+      }
+    } catch (error) {
+      console.error('Failed to load images:', error);
+    }
+
+    // Reset input to allow selecting same files again
+    e.target.value = '';
+  }, [onAddMore]);
 
   const renderTool = () => {
     const props = { images: selectedImagesList };
@@ -94,7 +122,15 @@ const BatchImageProcessor = memo(({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onAddMore}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button variant="outline" size="sm" onClick={handleAddMoreClick}>
             <Plus className="w-4 h-4 mr-2" />
             Add More
           </Button>

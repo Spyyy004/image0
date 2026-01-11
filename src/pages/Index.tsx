@@ -37,12 +37,8 @@ const Index = () => {
     });
   }, []);
 
-  const handleAddMore = useCallback(() => {
-    // Trigger the file input in the uploader
-    const fileInput = document.getElementById('file-input') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
+  const handleAddMore = useCallback((newImages: ImageData[]) => {
+    setImages(prev => [...prev, ...newImages]);
   }, []);
 
   return (
