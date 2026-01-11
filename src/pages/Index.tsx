@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import Privacy from "@/components/Privacy";
 import Footer from "@/components/Footer";
+import TopNav from "@/components/TopNav";
 import ImageUploader from "@/components/ImageUploader";
 import BatchImageProcessor from "@/components/BatchImageProcessor";
 import { ImageData } from "@/lib/imageUtils";
@@ -46,6 +47,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <TopNav />
+      
       {/* Hero Section */}
       <Hero onStartClick={handleStartClick} />
 

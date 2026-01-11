@@ -7,7 +7,7 @@ interface HeroProps {
 
 const Hero = ({ onStartClick }: HeroProps) => {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 py-20">
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 py-20 pt-24">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card pointer-events-none" />
       
