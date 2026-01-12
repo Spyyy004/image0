@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Shield, Zap, Lock } from "lucide-react";
+import { Shield, Wifi, Lock } from "lucide-react";
 
 interface HeroProps {
   onStartClick: () => void;
@@ -16,22 +16,22 @@ const Hero = ({ onStartClick }: HeroProps) => {
         {/* Logo/Brand */}
         <div className="mb-8">
           <span className="font-mono text-sm text-muted-foreground tracking-wider">
-            image0.dev
+            image0.dev — local image utilities
           </span>
         </div>
 
         {/* Headline */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6 text-balance">
-          Professional Image Tools.
+          Image tools that run entirely in your browser.
           <br />
-          <span className="text-muted-foreground">100% In-Browser. Zero Uploads.</span>
+          <span className="text-muted-foreground">Zero uploads. Zero tracking.</span>
         </h1>
 
         {/* Subheadline */}
         <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto text-balance">
-          Resize, compress, and convert images directly on your device.
+          Resize, compress, and convert images locally — even offline.
           <br className="hidden sm:block" />
-          Your files never leave your browser.
+          Batch folders, preview before export, and remove metadata by default.
         </p>
 
         {/* CTA */}
@@ -41,7 +41,7 @@ const Hero = ({ onStartClick }: HeroProps) => {
           onClick={onStartClick}
           className="mb-8"
         >
-          Start Editing Images
+          Open Image Tools
         </Button>
 
         {/* Trust badges */}
@@ -55,8 +55,8 @@ const Hero = ({ onStartClick }: HeroProps) => {
             <span>No tracking</span>
           </div>
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-accent" />
-            <span>No account required</span>
+            <Wifi className="w-4 h-4 text-accent" />
+            <span>Works offline</span>
           </div>
         </div>
       </div>
