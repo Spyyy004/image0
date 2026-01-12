@@ -1,14 +1,10 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Disallow test/internal routes (if any)
+Disallow: /api/
+Disallow: /internal/
+Disallow: /test/
+
+# Sitemap
+Sitemap: https://image0.dev/sitemap.xml
