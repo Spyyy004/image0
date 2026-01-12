@@ -1,8 +1,9 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ImageData, batchConvert, downloadBlobs, OutputFormat } from "@/lib/imageUtils";
+import { ImageData, batchConvert, downloadBlobs, OutputFormat, convertImage } from "@/lib/imageUtils";
 import { Download, Check } from "lucide-react";
+import BeforeAfterPreview from "./BeforeAfterPreview";
 
 interface BatchConvertToolProps {
   images: ImageData[];
@@ -18,6 +19,9 @@ const BatchConvertTool = memo(({ images }: BatchConvertToolProps) => {
   const [selectedFormat, setSelectedFormat] = useState<OutputFormat>("image/webp");
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, phase: '' });
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewSize, setPreviewSize] = useState<number | undefined>(undefined);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   // Count how many images would actually be converted
   const imagesNeedingConversion = images.filter(
@@ -59,6 +63,34 @@ const BatchConvertTool = memo(({ images }: BatchConvertToolProps) => {
     ? Math.round((progress.current / progress.total) * 100) 
     : 0;
 
+  // Generate preview when format changes
+  useEffect(() => {
+    if (images.length === 0) {
+      setPreviewBlob(null);
+      setPreviewSize(undefined);
+      return;
+    }
+
+    const generatePreview = async () => {
+      setIsGeneratingPreview(true);
+      try {
+        const firstImage = images[0];
+        const blob = await convertImage(firstImage, selectedFormat);
+        setPreviewBlob(blob);
+        setPreviewSize(blob.size);
+      } catch (error) {
+        console.error('Failed to generate preview:', error);
+        setPreviewBlob(null);
+        setPreviewSize(undefined);
+      } finally {
+        setIsGeneratingPreview(false);
+      }
+    };
+
+    const timeoutId = setTimeout(generatePreview, 300); // Debounce
+    return () => clearTimeout(timeoutId);
+  }, [selectedFormat, images]);
+
   // Count current formats
   const formatCounts = images.reduce((acc, img) => {
     const format = img.type.replace('image/', '').toUpperCase();
@@ -68,6 +100,25 @@ const BatchConvertTool = memo(({ images }: BatchConvertToolProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Preview */}
+      {images.length > 0 && (
+        <div className="p-4 rounded-xl bg-secondary">
+          <h3 className="text-sm font-medium text-foreground mb-3">Preview</h3>
+          {isGeneratingPreview ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <p className="text-sm">Generating preview...</p>
+            </div>
+          ) : (
+            <BeforeAfterPreview
+              original={images[0]}
+              processedBlob={previewBlob}
+              processedSize={previewSize}
+              viewMode="side-by-side"
+            />
+          )}
+        </div>
+      )}
+
       {/* Current formats summary */}
       <div className="p-4 rounded-xl bg-secondary">
         <div className="flex items-center justify-between">

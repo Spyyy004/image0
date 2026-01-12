@@ -26,6 +26,97 @@ export const generateId = (): string => {
   return Math.random().toString(36).substring(2, 9);
 };
 
+// Type definitions for FileSystemEntry API (webkit)
+interface FileSystemEntry {
+  isFile: boolean;
+  isDirectory: boolean;
+  name: string;
+  fullPath: string;
+}
+
+interface FileSystemFileEntry extends FileSystemEntry {
+  isFile: true;
+  isDirectory: false;
+  file(callback: (file: File) => void): void;
+}
+
+interface FileSystemDirectoryEntry extends FileSystemEntry {
+  isFile: false;
+  isDirectory: true;
+  createReader(): FileSystemDirectoryReader;
+}
+
+interface FileSystemDirectoryReader {
+  readEntries(callback: (entries: FileSystemEntry[]) => void): void;
+}
+
+// Recursively extract image files from directory entry
+const extractFilesFromEntry = async (
+  entry: FileSystemEntry,
+  files: File[] = []
+): Promise<File[]> => {
+  if (entry.isFile) {
+    return new Promise((resolve) => {
+      (entry as FileSystemFileEntry).file((file: File) => {
+        // Only add image files
+        if (file.type.startsWith('image/')) {
+          files.push(file);
+        }
+        resolve(files);
+      });
+    });
+  } else if (entry.isDirectory) {
+    const dirReader = (entry as FileSystemDirectoryEntry).createReader();
+    const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+      const readEntries: FileSystemEntry[] = [];
+      const read = () => {
+        dirReader.readEntries((batch) => {
+          if (batch.length === 0) {
+            resolve(readEntries);
+          } else {
+            readEntries.push(...batch);
+            read();
+          }
+        });
+      };
+      read();
+    });
+
+    // Recursively process all entries
+    for (const subEntry of entries) {
+      await extractFilesFromEntry(subEntry, files);
+    }
+  }
+  return files;
+};
+
+// Extract image files from DataTransfer (supports folders)
+export const extractImageFilesFromDataTransfer = async (
+  dataTransfer: DataTransfer
+): Promise<File[]> => {
+  const files: File[] = [];
+  const items = Array.from(dataTransfer.items);
+
+  for (const item of items) {
+    // Check if it's a directory (folder)
+    if (item.webkitGetAsEntry) {
+      const entry = item.webkitGetAsEntry();
+      if (entry) {
+        const extractedFiles = await extractFilesFromEntry(entry);
+        files.push(...extractedFiles);
+      }
+    } else {
+      // Fallback to regular file
+      const file = item.getAsFile();
+      if (file && file.type.startsWith('image/')) {
+        files.push(file);
+      }
+    }
+  }
+
+  return files;
+};
+
 export const loadImage = (file: File): Promise<ImageData> => {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);

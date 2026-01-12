@@ -37,11 +37,42 @@ const ImageUploader = memo(({ onImagesLoad }: ImageUploaderProps) => {
     }
   }, [onImagesLoad]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    
+    // Check if folder drag & drop is supported
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      const firstItem = e.dataTransfer.items[0];
+      if (firstItem.webkitGetAsEntry) {
+        // Folder drag & drop supported
+        try {
+          setIsLoading(true);
+          const { extractImageFilesFromDataTransfer } = await import('@/lib/imageUtils');
+          const imageFiles = await extractImageFilesFromDataTransfer(e.dataTransfer);
+          
+          if (imageFiles.length > 0) {
+            setLoadProgress({ loaded: 0, total: imageFiles.length });
+            const images = await loadImages(imageFiles, (loaded, total) => {
+              setLoadProgress({ loaded, total });
+            });
+            if (images.length > 0) {
+              onImagesLoad(images);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to process folder:', error);
+        } finally {
+          setIsLoading(false);
+          setLoadProgress({ loaded: 0, total: 0 });
+        }
+        return;
+      }
+    }
+    
+    // Fallback to regular file handling
     handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  }, [handleFiles, onImagesLoad]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -79,6 +110,14 @@ const ImageUploader = memo(({ onImagesLoad }: ImageUploaderProps) => {
         className="hidden"
         onChange={handleInputChange}
       />
+      <input
+        id="folder-input"
+        type="file"
+        webkitdirectory=""
+        directory=""
+        className="hidden"
+        onChange={handleInputChange}
+      />
 
       {isLoading ? (
         <div className="flex flex-col items-center gap-4">
@@ -109,6 +148,9 @@ const ImageUploader = memo(({ onImagesLoad }: ImageUploaderProps) => {
             </p>
             <p className="text-muted-foreground text-sm mb-3">
               or click to browse • JPG, PNG, WebP supported
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Drop a folder to process all images inside
             </p>
             <div className="flex items-center justify-center gap-2 text-xs text-accent">
               <Images className="w-4 h-4" />

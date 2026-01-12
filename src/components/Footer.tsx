@@ -8,6 +8,9 @@ const Footer = () => {
             <p className="text-xs text-muted-foreground mt-1">
               Built for people who care about privacy.
             </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Works offline once loaded.
+            </p>
           </div>
           
           <div className="flex items-center gap-6 text-sm text-muted-foreground">

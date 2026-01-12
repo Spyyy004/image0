@@ -1,0 +1,18 @@
+{
+  "name": "image0.dev",
+  "short_name": "image0.dev",
+  "description": "Professional image tools that run entirely in your browser",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/assets/image.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

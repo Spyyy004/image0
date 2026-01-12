@@ -1,9 +1,10 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { ImageData, batchResize, downloadBlobs } from "@/lib/imageUtils";
+import { ImageData, batchResize, downloadBlobs, resizeImage } from "@/lib/imageUtils";
 import { Download, RotateCcw } from "lucide-react";
+import BeforeAfterPreview from "./BeforeAfterPreview";
 
 interface BatchResizeToolProps {
   images: ImageData[];
@@ -23,6 +24,9 @@ const BatchResizeTool = memo(({ images }: BatchResizeToolProps) => {
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, phase: '' });
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewSize, setPreviewSize] = useState<number | undefined>(undefined);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   const handlePreset = (presetWidth: number) => {
     setWidth(presetWidth);
@@ -40,7 +44,39 @@ const BatchResizeTool = memo(({ images }: BatchResizeToolProps) => {
     setWidth(1024);
     setHeight(768);
     setMaintainAspectRatio(true);
+    setPreviewBlob(null);
+    setPreviewSize(undefined);
   };
+
+  // Generate preview when settings change
+  useEffect(() => {
+    if (images.length === 0) {
+      setPreviewBlob(null);
+      setPreviewSize(undefined);
+      return;
+    }
+
+    const generatePreview = async () => {
+      setIsGeneratingPreview(true);
+      try {
+        const firstImage = images[0];
+        const blob = await resizeImage(firstImage, { width, height, maintainAspectRatio });
+        setPreviewBlob(blob);
+        setPreviewSize(blob.size);
+      } catch (error) {
+        console.error('Failed to generate preview:', error);
+        setPreviewBlob(null);
+        setPreviewSize(undefined);
+      } finally {
+        setIsGeneratingPreview(false);
+      }
+    };
+
+    const timeoutId = setTimeout(generatePreview, 300); // Debounce
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [width, height, maintainAspectRatio, images]);
 
   const handleDownloadAll = useCallback(async () => {
     if (images.length === 0) return;
@@ -79,6 +115,25 @@ const BatchResizeTool = memo(({ images }: BatchResizeToolProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Preview */}
+      {images.length > 0 && (
+        <div className="p-4 rounded-xl bg-secondary">
+          <h3 className="text-sm font-medium text-foreground mb-3">Preview</h3>
+          {isGeneratingPreview ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <p className="text-sm">Generating preview...</p>
+            </div>
+          ) : (
+            <BeforeAfterPreview
+              original={images[0]}
+              processedBlob={previewBlob}
+              processedSize={previewSize}
+              viewMode="side-by-side"
+            />
+          )}
+        </div>
+      )}
+
       {/* Dimension inputs */}
       <div className="grid grid-cols-2 gap-4">
         <div>
