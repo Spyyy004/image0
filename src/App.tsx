@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import CompressImages from "./pages/CompressImages";
 import ResizeImages from "./pages/ResizeImages";
 import ConvertImages from "./pages/ConvertImages";
+import HowItWorks from "./pages/HowItWorks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/compress-images" element={<CompressImages />} />
           <Route path="/resize-images" element={<ResizeImages />} />
           <Route path="/convert-images" element={<ConvertImages />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

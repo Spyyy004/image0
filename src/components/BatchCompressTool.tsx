@@ -1,10 +1,9 @@
-import { useState, useCallback, memo, useEffect } from "react";
+import { useState, useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
-import { ImageData, batchCompress, downloadBlobs, formatBytes, compressImage } from "@/lib/imageUtils";
+import { ImageData, batchCompress, downloadBlobs, formatBytes } from "@/lib/imageUtils";
 import { Download } from "lucide-react";
-import BeforeAfterPreview from "./BeforeAfterPreview";
 
 interface BatchCompressToolProps {
   images: ImageData[];
@@ -14,41 +13,10 @@ const BatchCompressTool = memo(({ images }: BatchCompressToolProps) => {
   const [quality, setQuality] = useState(80);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, phase: '' });
-  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
-  const [previewSize, setPreviewSize] = useState<number | undefined>(undefined);
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   const totalSize = images.reduce((sum, img) => sum + img.size, 0);
   const estimatedSize = Math.round(totalSize * (quality / 100) * 0.7); // Rough estimate
   const estimatedReduction = Math.round((1 - estimatedSize / totalSize) * 100);
-
-  // Generate preview when quality changes
-  useEffect(() => {
-    if (images.length === 0) {
-      setPreviewBlob(null);
-      setPreviewSize(undefined);
-      return;
-    }
-
-    const generatePreview = async () => {
-      setIsGeneratingPreview(true);
-      try {
-        const firstImage = images[0];
-        const blob = await compressImage(firstImage, { quality: quality / 100 });
-        setPreviewBlob(blob);
-        setPreviewSize(blob.size);
-      } catch (error) {
-        console.error('Failed to generate preview:', error);
-        setPreviewBlob(null);
-        setPreviewSize(undefined);
-      } finally {
-        setIsGeneratingPreview(false);
-      }
-    };
-
-    const timeoutId = setTimeout(generatePreview, 300); // Debounce
-    return () => clearTimeout(timeoutId);
-  }, [quality, images]);
 
   const handleDownloadAll = useCallback(async () => {
     if (images.length === 0) return;
@@ -87,25 +55,6 @@ const BatchCompressTool = memo(({ images }: BatchCompressToolProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Preview */}
-      {images.length > 0 && (
-        <div className="p-4 rounded-xl bg-secondary">
-          <h3 className="text-sm font-medium text-foreground mb-3">Preview</h3>
-          {isGeneratingPreview ? (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <p className="text-sm">Generating preview...</p>
-            </div>
-          ) : (
-            <BeforeAfterPreview
-              original={images[0]}
-              processedBlob={previewBlob}
-              processedSize={previewSize}
-              viewMode="side-by-side"
-            />
-          )}
-        </div>
-      )}
-
       {/* Quality slider */}
       <div>
         <div className="flex items-center justify-between mb-3">
